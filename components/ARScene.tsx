@@ -1,0 +1,104 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "a-scene": any;
+      "a-marker": any;
+      "a-entity": any;
+      "a-box": any;
+      "a-sphere": any;
+      "a-cylinder": any;
+    }
+  }
+}
+
+interface ARSceneProps {
+  markerColor?: string;
+  objectType?: "box" | "sphere" | "cylinder";
+}
+
+export default function ARScene({
+  markerColor = "#FF0000",
+  objectType = "box",
+}: ARSceneProps) {
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // A-Frame と AR.js のスクリプトを動的にロード
+    const loadScripts = async () => {
+      if (typeof window === "undefined") return;
+
+      // A-Frame のロード
+      if (!document.querySelector('script[src*="aframe"]')) {
+        const aframeScript = document.createElement("script");
+        aframeScript.src =
+          "https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe-master.min.js";
+        document.head.appendChild(aframeScript);
+
+        await new Promise((resolve) => {
+          aframeScript.onload = resolve;
+        });
+      }
+
+      // AR.js のロード
+      if (!document.querySelector('script[src*="ar.js"]')) {
+        const arScript = document.createElement("script");
+        arScript.src =
+          "https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js";
+        document.head.appendChild(arScript);
+
+        await new Promise((resolve) => {
+          arScript.onload = resolve;
+        });
+      }
+
+      setIsLoaded(true);
+    };
+
+    loadScripts();
+  }, []);
+
+  const renderObject = () => {
+    const commonProps = {
+      position: "0 0.5 0",
+      material: `color: ${markerColor}`,
+    };
+
+    switch (objectType) {
+      case "sphere":
+        return <a-sphere {...commonProps} radius="0.5" />;
+      case "cylinder":
+        return <a-cylinder {...commonProps} radius="0.5" height="1" />;
+      case "box":
+      default:
+        return <a-box {...commonProps} />;
+    }
+  };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>AR環境を読み込み中...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={sceneRef} className="w-full h-screen">
+      <a-scene
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        vr-mode-ui="enabled: false"
+      >
+        <a-marker preset="hiro">
+          <a-entity>{renderObject()}</a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
+      </a-scene>
+    </div>
+  );
+}
