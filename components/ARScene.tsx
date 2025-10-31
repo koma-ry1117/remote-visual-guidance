@@ -48,10 +48,10 @@ export default function ARScene({
       }
 
       // AR.js のロード
-      if (!document.querySelector('script[src*="ar-nft"]')) {
+      if (!document.querySelector('script[src*="aframe-ar"]')) {
         const arScript = document.createElement("script");
         arScript.src =
-          "https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js";
+          "https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js";
         document.head.appendChild(arScript);
 
         await new Promise((resolve) => {
