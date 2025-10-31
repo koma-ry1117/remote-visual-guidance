@@ -36,47 +36,89 @@ export default function DemoScene({
   showAnnotations = true,
 }: DemoSceneProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
-  const [objects, setObjects] = useState<SceneObject[]>([
-    // デフォルトオブジェクト
-    {
-      id: "default-1",
-      type: "box",
-      position: { x: 0, y: 1, z: -3 },
-      color: "#FF0000",
-    },
-  ]);
+  const [objects, setObjects] = useState<SceneObject[]>([]);
+  const [previewObject, setPreviewObject] = useState<SceneObject | null>(null);
+  const [draggingObjectId, setDraggingObjectId] = useState<string | null>(null);
+  const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
+
+  // マウス座標から3D位置を計算
+  const getPositionFromMouse = (event: MouseEvent): { x: number; y: number; z: number } | null => {
+    const canvas = sceneRef.current?.querySelector("canvas");
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    const distance = 3;
+    return {
+      x: x * distance * 0.5,
+      y: y * distance * 0.5 + 1,
+      z: -distance,
+    };
+  };
+
+  // マウス移動でプレビューと図形の移動
+  useEffect(() => {
+    let mounted = true;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const position = getPositionFromMouse(event);
+      if (!position) return;
+
+      // ドラッグ中の場合は図形を移動
+      if (draggingObjectId) {
+        setObjects((prev) =>
+          prev.map((obj) =>
+            obj.id === draggingObjectId
+              ? { ...obj, position }
+              : obj
+          )
+        );
+      } else {
+        // ドラッグ中でない場合はプレビューを表示
+        setPreviewObject({
+          id: "preview",
+          type: objectType,
+          position,
+          color: markerColor,
+        });
+      }
+    };
+
+    const canvas = sceneRef.current?.querySelector("canvas");
+    if (canvas) {
+      canvas.addEventListener("mousemove", handleMouseMove);
+      return () => {
+        canvas.removeEventListener("mousemove", handleMouseMove);
+      };
+    }
+  }, [objectType, markerColor, draggingObjectId]);
 
   // クリックイベントハンドラー
   useEffect(() => {
     let mounted = true;
     let cleanupFn: (() => void) | undefined;
 
-    const handleClick = (event: MouseEvent) => {
-      console.log("Click detected", event.button);
+    const handleMouseDown = (event: MouseEvent) => {
       if (event.button === 0) {
-        // 左クリック: オブジェクトを追加
-        const canvas = sceneRef.current?.querySelector("canvas");
-        if (!canvas) return;
+        // 左クリック: プレビュー位置にオブジェクトを固定
+        if (previewObject && previewObject.id === "preview") {
+          const newObject: SceneObject = {
+            ...previewObject,
+            id: `object-${Date.now()}`,
+          };
+          console.log("Adding object", newObject);
+          setObjects((prev) => [...prev, newObject]);
+          setDraggingObjectId(newObject.id);
+        }
+      }
+    };
 
-        const rect = canvas.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        // 3D空間での位置を計算（カメラの前方に配置）
-        const distance = 3;
-        const newObject: SceneObject = {
-          id: `object-${Date.now()}`,
-          type: objectType,
-          position: {
-            x: x * distance * 0.5,
-            y: y * distance * 0.5 + 1,
-            z: -distance,
-          },
-          color: markerColor,
-        };
-
-        console.log("Adding object", newObject);
-        setObjects((prev) => [...prev, newObject]);
+    const handleMouseUp = (event: MouseEvent) => {
+      if (event.button === 0) {
+        // ドラッグ終了
+        setDraggingObjectId(null);
       }
     };
 
@@ -148,12 +190,14 @@ export default function DemoScene({
       }
 
       console.log("Setting up click handlers");
-      canvas.addEventListener("click", handleClick);
+      canvas.addEventListener("mousedown", handleMouseDown);
+      canvas.addEventListener("mouseup", handleMouseUp);
       canvas.addEventListener("contextmenu", handleContextMenu);
 
       cleanupFn = () => {
         console.log("Cleaning up click handlers");
-        canvas.removeEventListener("click", handleClick);
+        canvas.removeEventListener("mousedown", handleMouseDown);
+        canvas.removeEventListener("mouseup", handleMouseUp);
         canvas.removeEventListener("contextmenu", handleContextMenu);
       };
     };
@@ -164,13 +208,15 @@ export default function DemoScene({
       mounted = false;
       if (cleanupFn) cleanupFn();
     };
-  }, [objectType, markerColor, setObjects]);
+  }, [previewObject, setObjects]);
 
-  const renderObject = (obj: SceneObject) => {
+  const renderObject = (obj: SceneObject, isPreview: boolean = false) => {
     const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
     const commonProps = {
       position: positionStr,
-      material: `color: ${obj.color}`,
+      material: isPreview
+        ? `color: ${obj.color}; opacity: 0.5; transparent: true`
+        : `color: ${obj.color}`,
       "data-object-id": obj.id,
     };
 
@@ -216,7 +262,10 @@ export default function DemoScene({
         ></a-plane>
 
         {/* 3Dオブジェクト（複数） */}
-        {objects.map((obj) => renderObject(obj))}
+        {objects.map((obj) => renderObject(obj, false))}
+
+        {/* プレビューオブジェクト */}
+        {previewObject && !draggingObjectId && renderObject(previewObject, true)}
 
         {/* 注釈 */}
         {showAnnotations && <AnnotationLayer />}

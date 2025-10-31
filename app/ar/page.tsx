@@ -137,10 +137,11 @@ export default function ARPage() {
             <p className="font-semibold mb-1">使い方:</p>
             {demoMode ? (
               <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>左クリック: マウス位置に新しい図形を追加</li>
-                <li>右クリック: 図形をクリックして削除</li>
-                <li>左上で図形の種類と色を変更できます</li>
-                <li>視点は固定（カメラ移動で視界を変更）</li>
+                <li>マウス移動: 半透明のプレビューが追従</li>
+                <li>左クリック押下: 図形を配置</li>
+                <li>左クリックドラッグ: 図形を移動</li>
+                <li>右クリック: 図形を削除</li>
+                <li>左上で図形の種類と色を変更</li>
               </ol>
             ) : (
               <>
