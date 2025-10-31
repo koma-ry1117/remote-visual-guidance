@@ -61,10 +61,22 @@ export default function DemoScene({
   // マウス移動でプレビューと図形の移動
   useEffect(() => {
     let mounted = true;
+    let cleanupFn: (() => void) | undefined;
 
     const handleMouseMove = (event: MouseEvent) => {
-      const position = getPositionFromMouse(event);
-      if (!position) return;
+      const canvas = sceneRef.current?.querySelector("canvas");
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const distance = 3;
+      const position = {
+        x: x * distance * 0.5,
+        y: y * distance * 0.5 + 1,
+        z: -distance,
+      };
 
       // ドラッグ中の場合は図形を移動
       if (draggingObjectId) {
@@ -86,13 +98,27 @@ export default function DemoScene({
       }
     };
 
-    const canvas = sceneRef.current?.querySelector("canvas");
-    if (canvas) {
+    const setupMouseMove = () => {
+      if (!mounted) return;
+
+      const canvas = sceneRef.current?.querySelector("canvas");
+      if (!canvas) {
+        setTimeout(setupMouseMove, 100);
+        return;
+      }
+
       canvas.addEventListener("mousemove", handleMouseMove);
-      return () => {
+      cleanupFn = () => {
         canvas.removeEventListener("mousemove", handleMouseMove);
       };
-    }
+    };
+
+    setupMouseMove();
+
+    return () => {
+      mounted = false;
+      if (cleanupFn) cleanupFn();
+    };
   }, [objectType, markerColor, draggingObjectId]);
 
   // クリックイベントハンドラー
@@ -101,21 +127,27 @@ export default function DemoScene({
     let cleanupFn: (() => void) | undefined;
 
     const handleMouseDown = (event: MouseEvent) => {
+      console.log("Mouse down event detected", event.button);
       if (event.button === 0) {
         // 左クリック: プレビュー位置にオブジェクトを固定
-        if (previewObject && previewObject.id === "preview") {
-          const newObject: SceneObject = {
-            ...previewObject,
-            id: `object-${Date.now()}`,
-          };
-          console.log("Adding object", newObject);
-          setObjects((prev) => [...prev, newObject]);
-          setDraggingObjectId(newObject.id);
-        }
+        // previewObjectの現在の状態を直接参照
+        setPreviewObject((currentPreview) => {
+          if (currentPreview && currentPreview.id === "preview") {
+            const newObject: SceneObject = {
+              ...currentPreview,
+              id: `object-${Date.now()}`,
+            };
+            console.log("Adding object", newObject);
+            setObjects((prev) => [...prev, newObject]);
+            setDraggingObjectId(newObject.id);
+          }
+          return currentPreview;
+        });
       }
     };
 
     const handleMouseUp = (event: MouseEvent) => {
+      console.log("Mouse up event detected");
       if (event.button === 0) {
         // ドラッグ終了
         setDraggingObjectId(null);
@@ -127,7 +159,10 @@ export default function DemoScene({
       console.log("Right click detected");
 
       const scene = sceneRef.current?.querySelector("a-scene");
-      if (!scene) return;
+      if (!scene) {
+        console.log("Scene not found");
+        return;
+      }
 
       // レイキャスティングでオブジェクトを検出
       if (typeof window !== "undefined" && (window as any).AFRAME) {
@@ -138,7 +173,10 @@ export default function DemoScene({
         }
 
         const canvas = sceneRef.current?.querySelector("canvas");
-        if (!canvas) return;
+        if (!canvas) {
+          console.log("Canvas not found");
+          return;
+        }
 
         const raycaster = new (window as any).THREE.Raycaster();
         const mouse = new (window as any).THREE.Vector2();
@@ -153,6 +191,7 @@ export default function DemoScene({
         const allObjects = Array.from(
           scene.querySelectorAll("[data-object-id]")
         );
+        console.log("Found objects for raycasting:", allObjects.length);
         const intersects: any[] = [];
 
         allObjects.forEach((obj: any) => {
@@ -208,7 +247,7 @@ export default function DemoScene({
       mounted = false;
       if (cleanupFn) cleanupFn();
     };
-  }, [previewObject, setObjects]);
+  }, []); // 依存配列を空にして、マウント時のみ設定
 
   const renderObject = (obj: SceneObject, isPreview: boolean = false) => {
     const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
