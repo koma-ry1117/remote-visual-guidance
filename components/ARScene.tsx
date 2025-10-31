@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import AnnotationLayer from "./annotations/AnnotationLayer";
 
 declare global {
@@ -28,54 +28,6 @@ export default function ARScene({
   showAnnotations = true,
 }: ARSceneProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    // A-Frame と AR.js のスクリプトを動的にロード
-    const loadScripts = async () => {
-      if (typeof window === "undefined") return;
-
-      // A-Frame のロード (AR.js 2.2.2と確実に互換性のあるバージョン)
-      if (!document.querySelector('script[src*="aframe"]')) {
-        const aframeScript = document.createElement("script");
-        aframeScript.src =
-          "https://aframe.io/releases/0.9.2/aframe.min.js";
-        document.head.appendChild(aframeScript);
-
-        await new Promise((resolve) => {
-          aframeScript.onload = resolve;
-        });
-
-        // A-Frameが完全に初期化されるまで待機
-        await new Promise((resolve) => {
-          const checkAFrame = () => {
-            if (typeof (window as any).AFRAME !== "undefined" && typeof (window as any).THREE !== "undefined") {
-              resolve(true);
-            } else {
-              setTimeout(checkAFrame, 50);
-            }
-          };
-          checkAFrame();
-        });
-      }
-
-      // AR.js のロード
-      if (!document.querySelector('script[src*="aframe-ar"]')) {
-        const arScript = document.createElement("script");
-        arScript.src =
-          "https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js";
-        document.head.appendChild(arScript);
-
-        await new Promise((resolve) => {
-          arScript.onload = resolve;
-        });
-      }
-
-      setIsLoaded(true);
-    };
-
-    loadScripts();
-  }, []);
 
   const renderObject = () => {
     const commonProps = {
@@ -93,14 +45,6 @@ export default function ARScene({
         return <a-box {...commonProps} />;
     }
   };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p>AR環境を読み込み中...</p>
-      </div>
-    );
-  }
 
   return (
     <div ref={sceneRef} className="w-full h-screen">
