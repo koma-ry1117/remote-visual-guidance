@@ -141,10 +141,10 @@ export default function ARPage() {
             ) : (
               <>
                 <ol className="list-decimal list-inside space-y-1 text-xs">
-                  <li>HIROマーカーをカメラに向けてください</li>
-                  <li>画面下部から注釈を追加できます</li>
+                  <li>HIROマーカーをカメラに向けてください（壁として扱われます）</li>
+                  <li>マーカー上をクリックしてパーティクルを配置（3秒後に消える）</li>
                   <li>右側で作業手順を確認できます</li>
-                  <li>左上でオブジェクト設定やスクリーンショット撮影ができます</li>
+                  <li>左上でパーティクルの色を変更できます</li>
                 </ol>
                 <p className="mt-2 text-xs">
                   HIROマーカー:{" "}
