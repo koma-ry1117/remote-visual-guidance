@@ -48,7 +48,11 @@ export default function DemoScene({
 
   // クリックイベントハンドラー
   useEffect(() => {
+    let mounted = true;
+    let cleanupFn: (() => void) | undefined;
+
     const handleClick = (event: MouseEvent) => {
+      console.log("Click detected", event.button);
       if (event.button === 0) {
         // 左クリック: オブジェクトを追加
         const canvas = sceneRef.current?.querySelector("canvas");
@@ -71,22 +75,29 @@ export default function DemoScene({
           color: markerColor,
         };
 
+        console.log("Adding object", newObject);
         setObjects((prev) => [...prev, newObject]);
       }
     };
 
     const handleContextMenu = (event: MouseEvent) => {
       event.preventDefault(); // 右クリックメニューを無効化
+      console.log("Right click detected");
 
-      const canvas = sceneRef.current?.querySelector("canvas");
-      if (!canvas) return;
+      const scene = sceneRef.current?.querySelector("a-scene");
+      if (!scene) return;
 
       // レイキャスティングでオブジェクトを検出
       if (typeof window !== "undefined" && (window as any).AFRAME) {
-        const scene = sceneRef.current?.querySelector("a-scene");
-        if (!scene) return;
-
         const camera = (scene as any).camera;
+        if (!camera) {
+          console.log("Camera not ready");
+          return;
+        }
+
+        const canvas = sceneRef.current?.querySelector("canvas");
+        if (!canvas) return;
+
         const raycaster = new (window as any).THREE.Raycaster();
         const mouse = new (window as any).THREE.Vector2();
 
@@ -118,22 +129,42 @@ export default function DemoScene({
         if (intersects.length > 0) {
           intersects.sort((a, b) => a.distance - b.distance);
           const objectIdToRemove = intersects[0].objectId;
+          console.log("Removing object", objectIdToRemove);
           setObjects((prev) => prev.filter((obj) => obj.id !== objectIdToRemove));
+        } else {
+          console.log("No object found under cursor");
         }
       }
     };
 
-    const canvas = sceneRef.current?.querySelector("canvas");
-    if (canvas) {
+    const setupClickHandlers = () => {
+      if (!mounted) return;
+
+      const canvas = sceneRef.current?.querySelector("canvas");
+      if (!canvas) {
+        console.log("Canvas not found, retrying...");
+        setTimeout(setupClickHandlers, 100);
+        return;
+      }
+
+      console.log("Setting up click handlers");
       canvas.addEventListener("click", handleClick);
       canvas.addEventListener("contextmenu", handleContextMenu);
 
-      return () => {
+      cleanupFn = () => {
+        console.log("Cleaning up click handlers");
         canvas.removeEventListener("click", handleClick);
         canvas.removeEventListener("contextmenu", handleContextMenu);
       };
-    }
-  }, [objectType, markerColor]);
+    };
+
+    setupClickHandlers();
+
+    return () => {
+      mounted = false;
+      if (cleanupFn) cleanupFn();
+    };
+  }, [objectType, markerColor, setObjects]);
 
   const renderObject = (obj: SceneObject) => {
     const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
@@ -161,7 +192,12 @@ export default function DemoScene({
         vr-mode-ui="enabled: false"
       >
         {/* カメラ（固定） */}
-        <a-entity camera look-controls="enabled: false" wasd-controls="enabled: false" position="0 1.6 0"></a-entity>
+        <a-entity
+          camera="active: true"
+          look-controls="enabled: false"
+          wasd-controls="enabled: false"
+          position="0 1.6 0"
+        ></a-entity>
 
         {/* ライト */}
         <a-entity light="type: ambient; color: #FFF; intensity: 0.5"></a-entity>
