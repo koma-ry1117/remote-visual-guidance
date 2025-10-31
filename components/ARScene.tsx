@@ -35,63 +35,17 @@ export default function ARScene({
     const commonProps = {
       position,
       rotation,
-      material: `color: ${markerColor}; side: double`,
+      material: `color: ${markerColor}; transparent: true; side: double`,
     };
 
-    switch (objectType) {
-      case "circle":
-        // リング形状で枠線のみを描画
-        return (
-          <a-ring
-            {...commonProps}
-            radius-inner="0.045"
-            radius-outer="0.05"
-          />
-        );
-      case "box":
-      default:
-        // 正方形の枠線を4本の細い直方体で描画
-        const lineThickness = 0.002;
-        const size = 0.1;
-        const halfSize = size / 2;
-
-        return (
-          <a-entity position={position} rotation={rotation}>
-            {/* 上辺 */}
-            <a-box
-              position={`0 ${halfSize} 0`}
-              width={size}
-              height={lineThickness}
-              depth={lineThickness}
-              material={`color: ${markerColor}`}
-            />
-            {/* 下辺 */}
-            <a-box
-              position={`0 ${-halfSize} 0`}
-              width={size}
-              height={lineThickness}
-              depth={lineThickness}
-              material={`color: ${markerColor}`}
-            />
-            {/* 左辺 */}
-            <a-box
-              position={`${-halfSize} 0 0`}
-              width={lineThickness}
-              height={size}
-              depth={lineThickness}
-              material={`color: ${markerColor}`}
-            />
-            {/* 右辺 */}
-            <a-box
-              position={`${halfSize} 0 0`}
-              width={lineThickness}
-              height={size}
-              depth={lineThickness}
-              material={`color: ${markerColor}`}
-            />
-          </a-entity>
-        );
-    }
+    // ARモードでは常に表示（フェードアウトなし）
+    return (
+      <a-ring
+        {...commonProps}
+        radius-inner="0.04"
+        radius-outer="0.05"
+      />
+    );
   };
 
   return (

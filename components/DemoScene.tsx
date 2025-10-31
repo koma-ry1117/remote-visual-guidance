@@ -28,6 +28,7 @@ interface SceneObject {
   position: { x: number; y: number; z: number };
   rotation?: { x: number; y: number; z: number };
   color: string;
+  createdAt: number; // 作成時刻を追跡
 }
 
 export default function DemoScene({
@@ -39,6 +40,19 @@ export default function DemoScene({
   const [objects, setObjects] = useState<SceneObject[]>([]);
   const [previewObject, setPreviewObject] = useState<SceneObject | null>(null);
   const [draggingObjectId, setDraggingObjectId] = useState<string | null>(null);
+
+  // パーティクルの自動削除（3秒後にフェードアウト）
+  useEffect(() => {
+    const fadeOutDuration = 3000; // 3秒
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setObjects((prev) =>
+        prev.filter((obj) => now - obj.createdAt < fadeOutDuration)
+      );
+    }, 100); // 100msごとにチェック
+
+    return () => clearInterval(interval);
+  }, []);
 
   // マウス移動でプレビューと図形の移動
   useEffect(() => {
@@ -106,6 +120,7 @@ export default function DemoScene({
           position,
           rotation,
           color: markerColor,
+          createdAt: Date.now(),
         });
       }
     };
@@ -145,9 +160,11 @@ export default function DemoScene({
         // previewObjectの現在の状態を直接参照
         setPreviewObject((currentPreview) => {
           if (currentPreview && currentPreview.id === "preview") {
+            const now = Date.now();
             const newObject: SceneObject = {
               ...currentPreview,
-              id: `object-${Date.now()}`,
+              id: `object-${now}`,
+              createdAt: now, // 新しいタイムスタンプを設定
             };
             console.log("Adding object", newObject);
             setObjects((prev) => [...prev, newObject]);
@@ -267,73 +284,36 @@ export default function DemoScene({
       ? `${obj.rotation.x} ${obj.rotation.y} ${obj.rotation.z}`
       : "0 0 0";
 
+    const isPreview = obj.id === "preview";
+
+    // パーティクルのフェードアウト計算（プレビューは固定不透明度）
+    const fadeOutDuration = 3000; // 3秒
+    let opacity = 1;
+
+    if (isPreview) {
+      opacity = 0.5; // プレビューは半透明
+    } else {
+      const elapsedTime = Date.now() - obj.createdAt;
+      opacity = Math.max(0, 1 - elapsedTime / fadeOutDuration);
+    }
+
     const commonProps = {
       position: positionStr,
       rotation: rotationStr,
-      material: `color: ${obj.color}; side: double`,
+      material: `color: ${obj.color}; opacity: ${opacity}; transparent: true; side: double`,
       "data-object-id": obj.id,
     };
 
-    const renderShape = () => {
-      switch (obj.type) {
-        case "circle":
-          // リング形状で枠線のみを描画
-          return (
-            <a-ring
-              key={obj.id}
-              {...commonProps}
-              radius-inner="0.045"
-              radius-outer="0.05"
-            />
-          );
-        case "box":
-        default:
-          // 正方形の枠線を4本の細い直方体で描画
-          const lineThickness = 0.002;
-          const size = 0.1;
-          const halfSize = size / 2;
-
-          return (
-            <a-entity key={obj.id} position={positionStr} rotation={rotationStr}>
-              {/* 上辺 */}
-              <a-box
-                position={`0 ${halfSize} 0`}
-                width={size}
-                height={lineThickness}
-                depth={lineThickness}
-                material={`color: ${obj.color}`}
-                data-object-id={obj.id}
-              />
-              {/* 下辺 */}
-              <a-box
-                position={`0 ${-halfSize} 0`}
-                width={size}
-                height={lineThickness}
-                depth={lineThickness}
-                material={`color: ${obj.color}`}
-              />
-              {/* 左辺 */}
-              <a-box
-                position={`${-halfSize} 0 0`}
-                width={lineThickness}
-                height={size}
-                depth={lineThickness}
-                material={`color: ${obj.color}`}
-              />
-              {/* 右辺 */}
-              <a-box
-                position={`${halfSize} 0 0`}
-                width={lineThickness}
-                height={size}
-                depth={lineThickness}
-                material={`color: ${obj.color}`}
-              />
-            </a-entity>
-          );
-      }
-    };
-
-    return renderShape();
+    // パーティクル風の円形リング（両タイプとも同じ）
+    return (
+      <a-ring
+        key={obj.id}
+        {...commonProps}
+        radius-inner="0.04"
+        radius-outer="0.05"
+        animation={!isPreview ? `property: components.material.material.opacity; from: 1; to: 0; dur: ${fadeOutDuration}; easing: linear` : undefined}
+      />
+    );
   };
 
   return (

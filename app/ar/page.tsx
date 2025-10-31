@@ -134,10 +134,9 @@ export default function ARPage() {
             {demoMode ? (
               <ol className="list-decimal list-inside space-y-1 text-xs">
                 <li>マウス移動: 半透明のプレビューが追従</li>
-                <li>左クリック押下: 図形を配置</li>
-                <li>左クリックドラッグ: 図形を移動</li>
-                <li>右クリック: 図形を削除</li>
-                <li>左上で図形の種類と色を変更</li>
+                <li>左クリック: パーティクルを配置（3秒後に消える）</li>
+                <li>右クリック: パーティクルを削除</li>
+                <li>左上でパーティクルの色を変更</li>
               </ol>
             ) : (
               <>
