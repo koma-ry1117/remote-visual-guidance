@@ -25,7 +25,7 @@ export default function ARPage() {
       {/* A-Frame スクリプトを先にロード */}
       <Script
         src="https://aframe.io/releases/0.9.2/aframe.min.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         onLoad={() => {
           console.log("A-Frame loaded");
         }}
@@ -33,7 +33,7 @@ export default function ARPage() {
       {/* AR.js スクリプトをA-Frameの後にロード */}
       <Script
         src="https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         onLoad={() => {
           console.log("AR.js loaded");
           setScriptsLoaded(true);
