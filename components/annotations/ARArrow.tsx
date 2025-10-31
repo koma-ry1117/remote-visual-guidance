@@ -56,10 +56,11 @@ export default function ARArrow({ annotation }: ARArrowProps) {
       direction.z * direction.z
   );
 
+  // 方向ベクトルを反転（矢印の向きを修正）
   const normalizedDir = {
-    x: direction.x / directionLength,
-    y: direction.y / directionLength,
-    z: direction.z / directionLength,
+    x: -direction.x / directionLength,
+    y: -direction.y / directionLength,
+    z: -direction.z / directionLength,
   };
 
   // Y軸方向 (0, 1, 0) から normalizedDir への回転を計算
