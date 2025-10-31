@@ -137,10 +137,11 @@ export default function ARPage() {
             <p className="font-semibold mb-1">使い方:</p>
             {demoMode ? (
               <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>マウスドラッグで視点を回転できます</li>
-                <li>画面下部から注釈を追加できます</li>
-                <li>右側で作業手順を確認できます</li>
-                <li>左上でオブジェクト設定やモード切替ができます</li>
+                <li>左クリック: マウス位置に新しい図形を追加</li>
+                <li>右クリック: 図形をクリックして削除</li>
+                <li>マウスドラッグ: 視点を回転</li>
+                <li>WASDキー: カメラ移動</li>
+                <li>左上で図形の種類と色を変更できます</li>
               </ol>
             ) : (
               <>

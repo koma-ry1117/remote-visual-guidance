@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import AnnotationLayer from "./annotations/AnnotationLayer";
 
 declare global {
@@ -23,94 +23,134 @@ interface DemoSceneProps {
   showAnnotations?: boolean;
 }
 
+interface SceneObject {
+  id: string;
+  type: "box" | "sphere" | "cylinder";
+  position: { x: number; y: number; z: number };
+  color: string;
+}
+
 export default function DemoScene({
   markerColor = "#FF0000",
   objectType = "box",
   showAnnotations = true,
 }: DemoSceneProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
+  const [objects, setObjects] = useState<SceneObject[]>([
+    // デフォルトオブジェクト
+    {
+      id: "default-1",
+      type: "box",
+      position: { x: 0, y: 1, z: -3 },
+      color: "#FF0000",
+    },
+  ]);
 
+  // クリックイベントハンドラー
   useEffect(() => {
-    // A-Frameカスタムコンポーネント: マウスドラッグ方向を反転
-    if (typeof window !== "undefined" && (window as any).AFRAME) {
-      const AFRAME = (window as any).AFRAME;
+    const handleClick = (event: MouseEvent) => {
+      if (event.button === 0) {
+        // 左クリック: オブジェクトを追加
+        const canvas = sceneRef.current?.querySelector("canvas");
+        if (!canvas) return;
 
-      if (!AFRAME.components["reversed-look-controls"]) {
-        AFRAME.registerComponent("reversed-look-controls", {
-          dependencies: ["position", "rotation"],
+        const rect = canvas.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-          init: function () {
-            this.previousMouseEvent = null;
-            this.mouseDown = false;
-            this.pitchObject = new AFRAME.THREE.Object3D();
-            this.yawObject = new AFRAME.THREE.Object3D();
-            this.yawObject.add(this.pitchObject);
-
-            this.onMouseDown = this.onMouseDown.bind(this);
-            this.onMouseMove = this.onMouseMove.bind(this);
-            this.onMouseUp = this.onMouseUp.bind(this);
-
-            this.el.sceneEl.addEventListener("mousedown", this.onMouseDown);
-            document.addEventListener("mousemove", this.onMouseMove);
-            document.addEventListener("mouseup", this.onMouseUp);
+        // 3D空間での位置を計算（カメラの前方に配置）
+        const distance = 3;
+        const newObject: SceneObject = {
+          id: `object-${Date.now()}`,
+          type: objectType,
+          position: {
+            x: x * distance * 0.5,
+            y: y * distance * 0.5 + 1,
+            z: -distance,
           },
+          color: markerColor,
+        };
 
-          onMouseDown: function () {
-            this.mouseDown = true;
-          },
-
-          onMouseUp: function () {
-            this.mouseDown = false;
-          },
-
-          onMouseMove: function (event: any) {
-            if (!this.mouseDown) return;
-
-            const movementX = event.movementX || 0;
-            const movementY = event.movementY || 0;
-
-            // マウスドラッグと同じ方向にオブジェクトが移動して見えるように
-            // カメラを逆方向に回転させる
-            this.yawObject.rotation.y -= movementX * 0.002;
-            this.pitchObject.rotation.x -= movementY * 0.002;
-
-            // ピッチの制限（上下の回転を制限）
-            this.pitchObject.rotation.x = Math.max(
-              -Math.PI / 2,
-              Math.min(Math.PI / 2, this.pitchObject.rotation.x)
-            );
-          },
-
-          tick: function () {
-            const el = this.el;
-            el.object3D.rotation.y = this.yawObject.rotation.y;
-            el.object3D.rotation.x = this.pitchObject.rotation.x;
-          },
-
-          remove: function () {
-            this.el.sceneEl.removeEventListener("mousedown", this.onMouseDown);
-            document.removeEventListener("mousemove", this.onMouseMove);
-            document.removeEventListener("mouseup", this.onMouseUp);
-          },
-        });
+        setObjects((prev) => [...prev, newObject]);
       }
-    }
-  }, []);
-
-  const renderObject = () => {
-    const commonProps = {
-      position: "0 1 -3",
-      material: `color: ${markerColor}`,
     };
 
-    switch (objectType) {
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault(); // 右クリックメニューを無効化
+
+      const canvas = sceneRef.current?.querySelector("canvas");
+      if (!canvas) return;
+
+      // レイキャスティングでオブジェクトを検出
+      if (typeof window !== "undefined" && (window as any).AFRAME) {
+        const scene = sceneRef.current?.querySelector("a-scene");
+        if (!scene) return;
+
+        const camera = (scene as any).camera;
+        const raycaster = new (window as any).THREE.Raycaster();
+        const mouse = new (window as any).THREE.Vector2();
+
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        // すべてのオブジェクトに対してレイキャスト
+        const allObjects = Array.from(
+          scene.querySelectorAll("[data-object-id]")
+        );
+        const intersects: any[] = [];
+
+        allObjects.forEach((obj: any) => {
+          if (obj.object3D) {
+            const results = raycaster.intersectObject(obj.object3D, true);
+            if (results.length > 0) {
+              intersects.push({
+                distance: results[0].distance,
+                objectId: obj.getAttribute("data-object-id"),
+              });
+            }
+          }
+        });
+
+        // 最も近いオブジェクトを削除
+        if (intersects.length > 0) {
+          intersects.sort((a, b) => a.distance - b.distance);
+          const objectIdToRemove = intersects[0].objectId;
+          setObjects((prev) => prev.filter((obj) => obj.id !== objectIdToRemove));
+        }
+      }
+    };
+
+    const canvas = sceneRef.current?.querySelector("canvas");
+    if (canvas) {
+      canvas.addEventListener("click", handleClick);
+      canvas.addEventListener("contextmenu", handleContextMenu);
+
+      return () => {
+        canvas.removeEventListener("click", handleClick);
+        canvas.removeEventListener("contextmenu", handleContextMenu);
+      };
+    }
+  }, [objectType, markerColor]);
+
+  const renderObject = (obj: SceneObject) => {
+    const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
+    const commonProps = {
+      position: positionStr,
+      material: `color: ${obj.color}`,
+      "data-object-id": obj.id,
+    };
+
+    switch (obj.type) {
       case "sphere":
-        return <a-sphere {...commonProps} radius="0.5" />;
+        return <a-sphere key={obj.id} {...commonProps} radius="0.5" />;
       case "cylinder":
-        return <a-cylinder {...commonProps} radius="0.5" height="1" />;
+        return <a-cylinder key={obj.id} {...commonProps} radius="0.5" height="1" />;
       case "box":
       default:
-        return <a-box {...commonProps} />;
+        return <a-box key={obj.id} {...commonProps} />;
     }
   };
 
@@ -120,8 +160,8 @@ export default function DemoScene({
         embedded
         vr-mode-ui="enabled: false"
       >
-        {/* カメラ（反転コントロール） */}
-        <a-entity camera reversed-look-controls wasd-controls position="0 1.6 0"></a-entity>
+        {/* カメラ */}
+        <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
         {/* ライト */}
         <a-entity light="type: ambient; color: #FFF; intensity: 0.5"></a-entity>
@@ -139,11 +179,11 @@ export default function DemoScene({
           color="#7BC8A4"
         ></a-plane>
 
-        {/* 3Dオブジェクト */}
-        <a-entity position="0 0 -3">
-          {renderObject()}
-          {showAnnotations && <AnnotationLayer />}
-        </a-entity>
+        {/* 3Dオブジェクト（複数） */}
+        {objects.map((obj) => renderObject(obj))}
+
+        {/* 注釈 */}
+        {showAnnotations && <AnnotationLayer />}
       </a-scene>
     </div>
   );
