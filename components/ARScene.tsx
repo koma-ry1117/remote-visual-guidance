@@ -50,7 +50,7 @@ export default function ARScene({
     <div ref={sceneRef} className="w-full h-screen">
       <a-scene
         embedded
-        arjs
+        arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true;"
         device-orientation-permission-ui="enabled: false"
