@@ -45,6 +45,18 @@ export default function ARScene({
         await new Promise((resolve) => {
           aframeScript.onload = resolve;
         });
+
+        // A-Frameが完全に初期化されるまで待機
+        await new Promise((resolve) => {
+          const checkAFrame = () => {
+            if (typeof (window as any).AFRAME !== "undefined" && typeof (window as any).THREE !== "undefined") {
+              resolve(true);
+            } else {
+              setTimeout(checkAFrame, 50);
+            }
+          };
+          checkAFrame();
+        });
       }
 
       // AR.js のロード
