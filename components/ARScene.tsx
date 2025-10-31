@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AnnotationLayer from "./annotations/AnnotationLayer";
 
 declare global {
   namespace JSX {
@@ -18,11 +19,13 @@ declare global {
 interface ARSceneProps {
   markerColor?: string;
   objectType?: "box" | "sphere" | "cylinder";
+  showAnnotations?: boolean;
 }
 
 export default function ARScene({
   markerColor = "#FF0000",
   objectType = "box",
+  showAnnotations = true,
 }: ARSceneProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -96,6 +99,7 @@ export default function ARScene({
       >
         <a-marker preset="hiro">
           <a-entity>{renderObject()}</a-entity>
+          {showAnnotations && <AnnotationLayer />}
         </a-marker>
         <a-entity camera></a-entity>
       </a-scene>
