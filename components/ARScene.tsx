@@ -94,15 +94,16 @@ export default function ARScene({
     <div ref={sceneRef} className="w-full h-screen">
       <a-scene
         embedded
-        arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+        arjs
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true;"
+        device-orientation-permission-ui="enabled: false"
       >
         <a-marker preset="hiro">
           <a-entity>{renderObject()}</a-entity>
           {showAnnotations && <AnnotationLayer />}
         </a-marker>
-        <a-entity camera look-controls="enabled: false"></a-entity>
+        <a-entity camera look-controls="enabled: false" wasd-controls="enabled: false"></a-entity>
       </a-scene>
     </div>
   );
