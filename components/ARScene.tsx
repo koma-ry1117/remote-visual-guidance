@@ -39,7 +39,7 @@ export default function ARScene({
       if (!document.querySelector('script[src*="aframe"]')) {
         const aframeScript = document.createElement("script");
         aframeScript.src =
-          "https://cdn.jsdelivr.net/npm/aframe@1.0.4/dist/aframe-master.min.js";
+          "https://cdn.jsdelivr.net/npm/aframe@1.0.4/dist/aframe-min.js";
         document.head.appendChild(aframeScript);
 
         await new Promise((resolve) => {
