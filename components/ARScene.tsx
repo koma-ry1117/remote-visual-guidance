@@ -31,18 +31,18 @@ export default function ARScene({
 
   const renderObject = () => {
     const commonProps = {
-      position: "0 0.5 0",
+      position: "0 0.05 0",
       material: `color: ${markerColor}`,
     };
 
     switch (objectType) {
       case "sphere":
-        return <a-sphere {...commonProps} radius="0.5" />;
+        return <a-sphere {...commonProps} radius="0.05" />;
       case "cylinder":
-        return <a-cylinder {...commonProps} radius="0.5" height="1" />;
+        return <a-cylinder {...commonProps} radius="0.05" height="0.1" />;
       case "box":
       default:
-        return <a-box {...commonProps} />;
+        return <a-box {...commonProps} width="0.1" height="0.1" depth="0.1" />;
     }
   };
 

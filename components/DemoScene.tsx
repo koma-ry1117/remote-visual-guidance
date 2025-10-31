@@ -39,24 +39,6 @@ export default function DemoScene({
   const [objects, setObjects] = useState<SceneObject[]>([]);
   const [previewObject, setPreviewObject] = useState<SceneObject | null>(null);
   const [draggingObjectId, setDraggingObjectId] = useState<string | null>(null);
-  const dragOffsetRef = useRef<{ x: number; y: number } | null>(null);
-
-  // マウス座標から3D位置を計算
-  const getPositionFromMouse = (event: MouseEvent): { x: number; y: number; z: number } | null => {
-    const canvas = sceneRef.current?.querySelector("canvas");
-    if (!canvas) return null;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    const distance = 3;
-    return {
-      x: x * distance * 0.5,
-      y: y * distance * 0.5 + 1,
-      z: -distance,
-    };
-  };
 
   // マウス移動でプレビューと図形の移動
   useEffect(() => {
@@ -74,7 +56,7 @@ export default function DemoScene({
       const distance = 3;
       const position = {
         x: x * distance * 0.5,
-        y: y * distance * 0.5 + 1,
+        y: y * distance * 0.5 + 1.6, // カメラの高さに合わせて調整
         z: -distance,
       };
 
@@ -261,12 +243,12 @@ export default function DemoScene({
 
     switch (obj.type) {
       case "sphere":
-        return <a-sphere key={obj.id} {...commonProps} radius="0.5" />;
+        return <a-sphere key={obj.id} {...commonProps} radius="0.05" />;
       case "cylinder":
-        return <a-cylinder key={obj.id} {...commonProps} radius="0.5" height="1" />;
+        return <a-cylinder key={obj.id} {...commonProps} radius="0.05" height="0.1" />;
       case "box":
       default:
-        return <a-box key={obj.id} {...commonProps} />;
+        return <a-box key={obj.id} {...commonProps} width="0.1" height="0.1" depth="0.1" />;
     }
   };
 
