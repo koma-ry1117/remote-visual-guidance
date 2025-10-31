@@ -70,8 +70,9 @@ export default function DemoScene({
             const movementY = event.movementY || 0;
 
             // マウスドラッグと同じ方向にオブジェクトが移動して見えるように
-            this.yawObject.rotation.y += movementX * 0.002;
-            this.pitchObject.rotation.x += movementY * 0.002;
+            // カメラを逆方向に回転させる
+            this.yawObject.rotation.y -= movementX * 0.002;
+            this.pitchObject.rotation.x -= movementY * 0.002;
 
             // ピッチの制限（上下の回転を制限）
             this.pitchObject.rotation.x = Math.max(
