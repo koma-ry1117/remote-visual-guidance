@@ -160,8 +160,8 @@ export default function DemoScene({
         embedded
         vr-mode-ui="enabled: false"
       >
-        {/* カメラ */}
-        <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+        {/* カメラ（固定） */}
+        <a-entity camera look-controls="enabled: false" wasd-controls="enabled: false" position="0 1.6 0"></a-entity>
 
         {/* ライト */}
         <a-entity light="type: ambient; color: #FFF; intensity: 0.5"></a-entity>

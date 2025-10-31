@@ -139,9 +139,8 @@ export default function ARPage() {
               <ol className="list-decimal list-inside space-y-1 text-xs">
                 <li>左クリック: マウス位置に新しい図形を追加</li>
                 <li>右クリック: 図形をクリックして削除</li>
-                <li>マウスドラッグ: 視点を回転</li>
-                <li>WASDキー: カメラ移動</li>
                 <li>左上で図形の種類と色を変更できます</li>
+                <li>視点は固定（カメラ移動で視界を変更）</li>
               </ol>
             ) : (
               <>
