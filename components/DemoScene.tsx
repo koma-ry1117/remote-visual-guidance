@@ -262,31 +262,56 @@ export default function DemoScene({
     };
   }, []); // 依存配列を空にして、マウント時のみ設定
 
-  const renderObject = (obj: SceneObject, isPreview: boolean = false) => {
+  const renderObject = (obj: SceneObject) => {
     const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
     const rotationStr = obj.rotation
       ? `${obj.rotation.x} ${obj.rotation.y} ${obj.rotation.z}`
       : "0 0 0";
 
-    const commonProps = {
+    // 塗りつぶし（20%不透明）のプロパティ
+    const fillProps = {
       position: positionStr,
       rotation: rotationStr,
-      material: isPreview
-        ? `color: ${obj.color}; opacity: 0.5; transparent: true; side: double`
-        : `color: ${obj.color}; side: double`,
+      material: `color: ${obj.color}; opacity: 0.2; transparent: true; side: double`,
       "data-object-id": obj.id,
     };
 
-    switch (obj.type) {
-      case "sphere":
-        return <a-sphere key={obj.id} {...commonProps} radius="0.05" />;
-      case "cylinder":
-        return <a-cylinder key={obj.id} {...commonProps} radius="0.05" height="0.1" />;
-      case "box":
-      default:
-        // 正方形（平面）を使用
-        return <a-plane key={obj.id} {...commonProps} width="0.1" height="0.1" />;
-    }
+    // 枠線（100%不透明）のプロパティ
+    const wireframeProps = {
+      position: positionStr,
+      rotation: rotationStr,
+      material: `color: ${obj.color}; opacity: 1.0; transparent: false; wireframe: true; side: double`,
+    };
+
+    const renderShape = () => {
+      switch (obj.type) {
+        case "sphere":
+          return (
+            <>
+              <a-sphere key={`${obj.id}-fill`} {...fillProps} radius="0.05" />
+              <a-sphere key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" />
+            </>
+          );
+        case "cylinder":
+          return (
+            <>
+              <a-cylinder key={`${obj.id}-fill`} {...fillProps} radius="0.05" height="0.1" />
+              <a-cylinder key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" height="0.1" />
+            </>
+          );
+        case "box":
+        default:
+          // 正方形（平面）を使用
+          return (
+            <>
+              <a-plane key={`${obj.id}-fill`} {...fillProps} width="0.1" height="0.1" />
+              <a-plane key={`${obj.id}-wire`} {...wireframeProps} width="0.1" height="0.1" />
+            </>
+          );
+      }
+    };
+
+    return <a-entity key={obj.id}>{renderShape()}</a-entity>;
   };
 
   return (
@@ -320,10 +345,10 @@ export default function DemoScene({
         ></a-plane>
 
         {/* 3Dオブジェクト（複数） */}
-        {objects.map((obj) => renderObject(obj, false))}
+        {objects.map((obj) => renderObject(obj))}
 
         {/* プレビューオブジェクト */}
-        {previewObject && !draggingObjectId && renderObject(previewObject, true)}
+        {previewObject && !draggingObjectId && renderObject(previewObject)}
 
         {/* 注釈 */}
         {showAnnotations && <AnnotationLayer />}

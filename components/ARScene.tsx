@@ -30,21 +30,47 @@ export default function ARScene({
   const sceneRef = useRef<HTMLDivElement>(null);
 
   const renderObject = () => {
-    const commonProps = {
-      position: "0 0.05 0",
-      rotation: "0 0 0",
-      material: `color: ${markerColor}; side: double`,
+    const position = "0 0.05 0";
+    const rotation = "0 0 0";
+
+    // 塗りつぶし（20%不透明）のプロパティ
+    const fillProps = {
+      position,
+      rotation,
+      material: `color: ${markerColor}; opacity: 0.2; transparent: true; side: double`,
+    };
+
+    // 枠線（100%不透明）のプロパティ
+    const wireframeProps = {
+      position,
+      rotation,
+      material: `color: ${markerColor}; opacity: 1.0; transparent: false; wireframe: true; side: double`,
     };
 
     switch (objectType) {
       case "sphere":
-        return <a-sphere {...commonProps} radius="0.05" />;
+        return (
+          <a-entity>
+            <a-sphere {...fillProps} radius="0.05" />
+            <a-sphere {...wireframeProps} radius="0.05" />
+          </a-entity>
+        );
       case "cylinder":
-        return <a-cylinder {...commonProps} radius="0.05" height="0.1" />;
+        return (
+          <a-entity>
+            <a-cylinder {...fillProps} radius="0.05" height="0.1" />
+            <a-cylinder {...wireframeProps} radius="0.05" height="0.1" />
+          </a-entity>
+        );
       case "box":
       default:
         // 正方形（平面）を使用
-        return <a-plane {...commonProps} width="0.1" height="0.1" />;
+        return (
+          <a-entity>
+            <a-plane {...fillProps} width="0.1" height="0.1" />
+            <a-plane {...wireframeProps} width="0.1" height="0.1" />
+          </a-entity>
+        );
     }
   };
 
