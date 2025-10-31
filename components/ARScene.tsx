@@ -35,11 +35,11 @@ export default function ARScene({
     const loadScripts = async () => {
       if (typeof window === "undefined") return;
 
-      // A-Frame のロード
+      // A-Frame のロード (AR.js 2.2.2と互換性のあるバージョン)
       if (!document.querySelector('script[src*="aframe"]')) {
         const aframeScript = document.createElement("script");
         aframeScript.src =
-          "https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe-master.min.js";
+          "https://cdn.jsdelivr.net/npm/aframe@1.0.4/dist/aframe-master.min.js";
         document.head.appendChild(aframeScript);
 
         await new Promise((resolve) => {
