@@ -10,7 +10,7 @@ declare global {
       "a-marker": any;
       "a-entity": any;
       "a-box": any;
-      "a-circle": any;
+      "a-ring": any;
     }
   }
 }
@@ -32,35 +32,63 @@ export default function ARScene({
     const position = "0 0.05 0";
     const rotation = "0 0 0";
 
-    // 塗りつぶし（20%不透明）のプロパティ
-    const fillProps = {
+    const commonProps = {
       position,
       rotation,
-      material: `color: ${markerColor}; opacity: 0.2; transparent: true; side: double`,
-    };
-
-    // 枠線（100%不透明）のプロパティ
-    const wireframeProps = {
-      position,
-      rotation,
-      material: `color: ${markerColor}; opacity: 1.0; transparent: false; wireframe: true; side: double`,
+      material: `color: ${markerColor}; side: double`,
     };
 
     switch (objectType) {
       case "circle":
+        // リング形状で枠線のみを描画
         return (
-          <a-entity>
-            <a-circle {...fillProps} radius="0.05" />
-            <a-circle {...wireframeProps} radius="0.05" />
-          </a-entity>
+          <a-ring
+            {...commonProps}
+            radius-inner="0.045"
+            radius-outer="0.05"
+          />
         );
       case "box":
       default:
-        // 正方形（平面）を使用
+        // 正方形の枠線を4本の細い直方体で描画
+        const lineThickness = 0.002;
+        const size = 0.1;
+        const halfSize = size / 2;
+
         return (
-          <a-entity>
-            <a-plane {...fillProps} width="0.1" height="0.1" />
-            <a-plane {...wireframeProps} width="0.1" height="0.1" />
+          <a-entity position={position} rotation={rotation}>
+            {/* 上辺 */}
+            <a-box
+              position={`0 ${halfSize} 0`}
+              width={size}
+              height={lineThickness}
+              depth={lineThickness}
+              material={`color: ${markerColor}`}
+            />
+            {/* 下辺 */}
+            <a-box
+              position={`0 ${-halfSize} 0`}
+              width={size}
+              height={lineThickness}
+              depth={lineThickness}
+              material={`color: ${markerColor}`}
+            />
+            {/* 左辺 */}
+            <a-box
+              position={`${-halfSize} 0 0`}
+              width={lineThickness}
+              height={size}
+              depth={lineThickness}
+              material={`color: ${markerColor}`}
+            />
+            {/* 右辺 */}
+            <a-box
+              position={`${halfSize} 0 0`}
+              width={lineThickness}
+              height={size}
+              depth={lineThickness}
+              material={`color: ${markerColor}`}
+            />
           </a-entity>
         );
     }

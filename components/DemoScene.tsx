@@ -9,7 +9,7 @@ declare global {
       "a-scene": any;
       "a-entity": any;
       "a-box": any;
-      "a-circle": any;
+      "a-ring": any;
       "a-plane": any;
       "a-sky": any;
     }
@@ -267,43 +267,73 @@ export default function DemoScene({
       ? `${obj.rotation.x} ${obj.rotation.y} ${obj.rotation.z}`
       : "0 0 0";
 
-    // 塗りつぶし（20%不透明）のプロパティ
-    const fillProps = {
+    const commonProps = {
       position: positionStr,
       rotation: rotationStr,
-      material: `color: ${obj.color}; opacity: 0.2; transparent: true; side: double`,
+      material: `color: ${obj.color}; side: double`,
       "data-object-id": obj.id,
-    };
-
-    // 枠線（100%不透明）のプロパティ
-    const wireframeProps = {
-      position: positionStr,
-      rotation: rotationStr,
-      material: `color: ${obj.color}; opacity: 1.0; transparent: false; wireframe: true; side: double`,
     };
 
     const renderShape = () => {
       switch (obj.type) {
         case "circle":
+          // リング形状で枠線のみを描画
           return (
-            <>
-              <a-circle key={`${obj.id}-fill`} {...fillProps} radius="0.05" />
-              <a-circle key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" />
-            </>
+            <a-ring
+              key={obj.id}
+              {...commonProps}
+              radius-inner="0.045"
+              radius-outer="0.05"
+            />
           );
         case "box":
         default:
-          // 正方形（平面）を使用
+          // 正方形の枠線を4本の細い直方体で描画
+          const lineThickness = 0.002;
+          const size = 0.1;
+          const halfSize = size / 2;
+
           return (
-            <>
-              <a-plane key={`${obj.id}-fill`} {...fillProps} width="0.1" height="0.1" />
-              <a-plane key={`${obj.id}-wire`} {...wireframeProps} width="0.1" height="0.1" />
-            </>
+            <a-entity key={obj.id} position={positionStr} rotation={rotationStr}>
+              {/* 上辺 */}
+              <a-box
+                position={`0 ${halfSize} 0`}
+                width={size}
+                height={lineThickness}
+                depth={lineThickness}
+                material={`color: ${obj.color}`}
+                data-object-id={obj.id}
+              />
+              {/* 下辺 */}
+              <a-box
+                position={`0 ${-halfSize} 0`}
+                width={size}
+                height={lineThickness}
+                depth={lineThickness}
+                material={`color: ${obj.color}`}
+              />
+              {/* 左辺 */}
+              <a-box
+                position={`${-halfSize} 0 0`}
+                width={lineThickness}
+                height={size}
+                depth={lineThickness}
+                material={`color: ${obj.color}`}
+              />
+              {/* 右辺 */}
+              <a-box
+                position={`${halfSize} 0 0`}
+                width={lineThickness}
+                height={size}
+                depth={lineThickness}
+                material={`color: ${obj.color}`}
+              />
+            </a-entity>
           );
       }
     };
 
-    return <a-entity key={obj.id}>{renderShape()}</a-entity>;
+    return renderShape();
   };
 
   return (
