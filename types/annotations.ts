@@ -24,7 +24,7 @@ export interface Rotation3D {
 /**
  * サポートされる注釈のタイプ
  */
-export type AnnotationType = 'arrow' | 'text';
+export type AnnotationType = 'text';
 
 /**
  * すべての注釈に共通する基本プロパティ
@@ -45,18 +45,6 @@ export interface BaseAnnotation {
 }
 
 /**
- * 矢印注釈の型定義
- * 特定の方向を指し示すために使用
- */
-export interface ArrowAnnotation extends BaseAnnotation {
-  type: 'arrow';
-  /** 矢印の方向ベクトル */
-  direction: Position3D;
-  /** 矢印の長さ（デフォルト: 1.0） */
-  length?: number;
-}
-
-/**
  * テキスト注釈の型定義
  * 3D空間にテキストを表示するために使用
  */
@@ -71,4 +59,4 @@ export interface TextAnnotation extends BaseAnnotation {
 /**
  * すべての注釈型のUnion型
  */
-export type Annotation = ArrowAnnotation | TextAnnotation;
+export type Annotation = TextAnnotation;

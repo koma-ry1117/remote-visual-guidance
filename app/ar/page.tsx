@@ -7,14 +7,13 @@ import DemoScene from "@/components/DemoScene";
 import ColorPicker from "@/components/ColorPicker";
 import ObjectSelector from "@/components/ObjectSelector";
 import { ARAnnotationProvider } from "@/contexts/ARAnnotationContext";
-import AnnotationToolbar from "@/components/tools/AnnotationToolbar";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel";
 import CaptureButton from "@/components/recording/CaptureButton";
 import { sampleWorkflow } from "@/data/sampleWorkflow";
 
 export default function ARPage() {
   const [markerColor, setMarkerColor] = useState("#FF0000");
-  const [objectType, setObjectType] = useState<"box" | "sphere" | "cylinder">(
+  const [objectType, setObjectType] = useState<"box" | "circle">(
     "box"
   );
   const [showControls, setShowControls] = useState(true);
@@ -66,9 +65,6 @@ export default function ARPage() {
 
           {/* 作業手順パネル */}
           {showWorkflow && <WorkflowPanel workflow={sampleWorkflow} />}
-
-          {/* 注釈ツールバー */}
-          <AnnotationToolbar />
 
           {/* コントロールパネル */}
           <div

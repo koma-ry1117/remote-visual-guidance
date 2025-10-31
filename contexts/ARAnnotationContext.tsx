@@ -11,9 +11,6 @@ type AnnotationUpdates = {
   rotation?: Rotation3D;
   color?: string;
   visible?: boolean;
-  // ArrowAnnotation固有
-  direction?: Position3D;
-  length?: number;
   // TextAnnotation固有
   text?: string;
   fontSize?: number;

@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { useARAnnotation } from '@/contexts/ARAnnotationContext';
-import ARArrow from './ARArrow';
 import ARText from './ARText';
-import type { ArrowAnnotation, TextAnnotation } from '@/types/annotations';
+import type { TextAnnotation } from '@/types/annotations';
 
 /**
  * AnnotationLayer
@@ -21,13 +20,6 @@ export default function AnnotationLayer() {
       {annotations.map((annotation) => {
         // 注釈のタイプに応じて適切なコンポーネントをレンダリング
         switch (annotation.type) {
-          case 'arrow':
-            return (
-              <ARArrow
-                key={annotation.id}
-                annotation={annotation as ArrowAnnotation}
-              />
-            );
           case 'text':
             return (
               <ARText

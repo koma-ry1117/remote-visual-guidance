@@ -1,8 +1,8 @@
 "use client";
 
 interface ObjectSelectorProps {
-  objectType: "box" | "sphere" | "cylinder";
-  onChange: (type: "box" | "sphere" | "cylinder") => void;
+  objectType: "box" | "circle";
+  onChange: (type: "box" | "circle") => void;
 }
 
 export default function ObjectSelector({
@@ -10,15 +10,14 @@ export default function ObjectSelector({
   onChange,
 }: ObjectSelectorProps) {
   const objectTypes = [
-    { value: "box" as const, label: "立方体", icon: "⬜" },
-    { value: "sphere" as const, label: "球体", icon: "⚫" },
-    { value: "cylinder" as const, label: "円柱", icon: "🔵" },
+    { value: "box" as const, label: "正方形", icon: "⬜" },
+    { value: "circle" as const, label: "円形", icon: "⚫" },
   ];
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-lg">
       <h3 className="text-lg font-semibold mb-3">オブジェクト選択</h3>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {objectTypes.map((obj) => (
           <button
             key={obj.value}

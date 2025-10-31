@@ -10,15 +10,14 @@ declare global {
       "a-marker": any;
       "a-entity": any;
       "a-box": any;
-      "a-sphere": any;
-      "a-cylinder": any;
+      "a-circle": any;
     }
   }
 }
 
 interface ARSceneProps {
   markerColor?: string;
-  objectType?: "box" | "sphere" | "cylinder";
+  objectType?: "box" | "circle";
   showAnnotations?: boolean;
 }
 
@@ -48,18 +47,11 @@ export default function ARScene({
     };
 
     switch (objectType) {
-      case "sphere":
+      case "circle":
         return (
           <a-entity>
-            <a-sphere {...fillProps} radius="0.05" />
-            <a-sphere {...wireframeProps} radius="0.05" />
-          </a-entity>
-        );
-      case "cylinder":
-        return (
-          <a-entity>
-            <a-cylinder {...fillProps} radius="0.05" height="0.1" />
-            <a-cylinder {...wireframeProps} radius="0.05" height="0.1" />
+            <a-circle {...fillProps} radius="0.05" />
+            <a-circle {...wireframeProps} radius="0.05" />
           </a-entity>
         );
       case "box":

@@ -9,8 +9,7 @@ declare global {
       "a-scene": any;
       "a-entity": any;
       "a-box": any;
-      "a-sphere": any;
-      "a-cylinder": any;
+      "a-circle": any;
       "a-plane": any;
       "a-sky": any;
     }
@@ -19,13 +18,13 @@ declare global {
 
 interface DemoSceneProps {
   markerColor?: string;
-  objectType?: "box" | "sphere" | "cylinder";
+  objectType?: "box" | "circle";
   showAnnotations?: boolean;
 }
 
 interface SceneObject {
   id: string;
-  type: "box" | "sphere" | "cylinder";
+  type: "box" | "circle";
   position: { x: number; y: number; z: number };
   rotation?: { x: number; y: number; z: number };
   color: string;
@@ -285,18 +284,11 @@ export default function DemoScene({
 
     const renderShape = () => {
       switch (obj.type) {
-        case "sphere":
+        case "circle":
           return (
             <>
-              <a-sphere key={`${obj.id}-fill`} {...fillProps} radius="0.05" />
-              <a-sphere key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" />
-            </>
-          );
-        case "cylinder":
-          return (
-            <>
-              <a-cylinder key={`${obj.id}-fill`} {...fillProps} radius="0.05" height="0.1" />
-              <a-cylinder key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" height="0.1" />
+              <a-circle key={`${obj.id}-fill`} {...fillProps} radius="0.05" />
+              <a-circle key={`${obj.id}-wire`} {...wireframeProps} radius="0.05" />
             </>
           );
         case "box":
