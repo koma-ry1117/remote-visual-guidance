@@ -72,11 +72,11 @@ export default function ARPage() {
 
           {/* コントロールパネル */}
           <div
-            className={`absolute top-4 left-4 z-10 transition-transform duration-300 ${
+            className={`absolute top-4 left-4 z-10 transition-transform duration-300 max-h-[calc(100vh-8rem)] w-72 ${
               showControls ? "translate-y-0" : "-translate-y-full opacity-0"
             }`}
           >
-            <div className="space-y-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4">
+            <div className="space-y-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4 max-h-full overflow-y-auto w-full">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-800">
                   オブジェクト設定
@@ -133,7 +133,7 @@ export default function ARPage() {
           </button>
 
           {/* 使用方法 */}
-          <div className="absolute bottom-4 left-4 z-10 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs">
+          <div className="absolute bottom-4 left-4 z-10 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs max-h-64 overflow-y-auto">
             <p className="font-semibold mb-1">使い方:</p>
             {demoMode ? (
               <ol className="list-decimal list-inside space-y-1 text-xs">
