@@ -48,10 +48,10 @@ export default function ARScene({
       }
 
       // AR.js のロード
-      if (!document.querySelector('script[src*="ar.js"]')) {
+      if (!document.querySelector('script[src*="ar-nft"]')) {
         const arScript = document.createElement("script");
         arScript.src =
-          "https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js";
+          "https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js";
         document.head.appendChild(arScript);
 
         await new Promise((resolve) => {
@@ -94,14 +94,15 @@ export default function ARScene({
     <div ref={sceneRef} className="w-full h-screen">
       <a-scene
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
         vr-mode-ui="enabled: false"
+        renderer="logarithmicDepthBuffer: true;"
       >
         <a-marker preset="hiro">
           <a-entity>{renderObject()}</a-entity>
           {showAnnotations && <AnnotationLayer />}
         </a-marker>
-        <a-entity camera></a-entity>
+        <a-entity camera look-controls="enabled: false"></a-entity>
       </a-scene>
     </div>
   );
