@@ -18,7 +18,8 @@ export default function ARPage() {
   );
   const [showControls, setShowControls] = useState(true);
   const [showWorkflow, setShowWorkflow] = useState(true);
-  const [scriptsLoaded, setScriptsLoaded] = useState(false);
+  const [aframeLoaded, setAframeLoaded] = useState(false);
+  const [arjsLoaded, setArjsLoaded] = useState(false);
 
   return (
     <>
@@ -28,21 +29,24 @@ export default function ARPage() {
         strategy="afterInteractive"
         onLoad={() => {
           console.log("A-Frame loaded");
+          setAframeLoaded(true);
         }}
       />
-      {/* AR.js スクリプトをA-Frameの後にロード */}
-      <Script
-        src="https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log("AR.js loaded");
-          setScriptsLoaded(true);
-        }}
-      />
+      {/* AR.js スクリプトをA-Frameのロード後にロード */}
+      {aframeLoaded && (
+        <Script
+          src="https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js"
+          strategy="afterInteractive"
+          onLoad={() => {
+            console.log("AR.js loaded");
+            setArjsLoaded(true);
+          }}
+        />
+      )}
 
       <ARAnnotationProvider>
         <div className="relative w-full h-screen">
-          {scriptsLoaded ? (
+          {arjsLoaded ? (
             <ARScene markerColor={markerColor} objectType={objectType} />
           ) : (
             <div className="flex items-center justify-center h-screen">
