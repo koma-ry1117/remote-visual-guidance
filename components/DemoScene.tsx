@@ -27,6 +27,7 @@ interface SceneObject {
   id: string;
   type: "box" | "sphere" | "cylinder";
   position: { x: number; y: number; z: number };
+  rotation?: { x: number; y: number; z: number };
   color: string;
 }
 
@@ -49,15 +50,44 @@ export default function DemoScene({
       const canvas = sceneRef.current?.querySelector("canvas");
       if (!canvas) return;
 
-      const rect = canvas.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      const scene = sceneRef.current?.querySelector("a-scene");
+      if (!scene) return;
 
-      const distance = 3;
+      // THREE.jsとA-Frameが利用可能か確認
+      if (typeof window === "undefined" || !(window as any).AFRAME || !(window as any).THREE) {
+        return;
+      }
+
+      const camera = (scene as any).camera;
+      if (!camera) return;
+
+      // マウス座標を正規化デバイス座標に変換
+      const rect = canvas.getBoundingClientRect();
+      const mouse = new (window as any).THREE.Vector2();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      // レイキャスターを使用してカメラからマウス方向へのレイを計算
+      const raycaster = new (window as any).THREE.Raycaster();
+      raycaster.setFromCamera(mouse, camera);
+
+      // カメラ位置から一定距離（1.5メートル）の点を取得
+      const distance = 1.5;
+      const direction = raycaster.ray.direction;
+      const origin = raycaster.ray.origin;
+
       const position = {
-        x: x * distance * 0.5,
-        y: y * distance * 0.5 + 1.6, // カメラの高さに合わせて調整
-        z: -distance,
+        x: origin.x + direction.x * distance,
+        y: origin.y + direction.y * distance,
+        z: origin.z + direction.z * distance,
+      };
+
+      // カメラの向きを取得して回転を計算（正方形をカメラに向ける）
+      const cameraRotation = camera.rotation;
+      const rotation = {
+        x: cameraRotation.x * (180 / Math.PI),
+        y: cameraRotation.y * (180 / Math.PI),
+        z: cameraRotation.z * (180 / Math.PI),
       };
 
       // ドラッグ中の場合は図形を移動
@@ -65,7 +95,7 @@ export default function DemoScene({
         setObjects((prev) =>
           prev.map((obj) =>
             obj.id === draggingObjectId
-              ? { ...obj, position }
+              ? { ...obj, position, rotation }
               : obj
           )
         );
@@ -75,6 +105,7 @@ export default function DemoScene({
           id: "preview",
           type: objectType,
           position,
+          rotation,
           color: markerColor,
         });
       }
@@ -233,11 +264,16 @@ export default function DemoScene({
 
   const renderObject = (obj: SceneObject, isPreview: boolean = false) => {
     const positionStr = `${obj.position.x} ${obj.position.y} ${obj.position.z}`;
+    const rotationStr = obj.rotation
+      ? `${obj.rotation.x} ${obj.rotation.y} ${obj.rotation.z}`
+      : "0 0 0";
+
     const commonProps = {
       position: positionStr,
+      rotation: rotationStr,
       material: isPreview
-        ? `color: ${obj.color}; opacity: 0.5; transparent: true`
-        : `color: ${obj.color}`,
+        ? `color: ${obj.color}; opacity: 0.5; transparent: true; side: double`
+        : `color: ${obj.color}; side: double`,
       "data-object-id": obj.id,
     };
 
@@ -248,7 +284,8 @@ export default function DemoScene({
         return <a-cylinder key={obj.id} {...commonProps} radius="0.05" height="0.1" />;
       case "box":
       default:
-        return <a-box key={obj.id} {...commonProps} width="0.1" height="0.1" depth="0.1" />;
+        // 正方形（平面）を使用
+        return <a-plane key={obj.id} {...commonProps} width="0.1" height="0.1" />;
     }
   };
 

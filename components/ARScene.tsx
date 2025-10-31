@@ -32,7 +32,8 @@ export default function ARScene({
   const renderObject = () => {
     const commonProps = {
       position: "0 0.05 0",
-      material: `color: ${markerColor}`,
+      rotation: "0 0 0",
+      material: `color: ${markerColor}; side: double`,
     };
 
     switch (objectType) {
@@ -42,7 +43,8 @@ export default function ARScene({
         return <a-cylinder {...commonProps} radius="0.05" height="0.1" />;
       case "box":
       default:
-        return <a-box {...commonProps} width="0.1" height="0.1" depth="0.1" />;
+        // 正方形（平面）を使用
+        return <a-plane {...commonProps} width="0.1" height="0.1" />;
     }
   };
 
