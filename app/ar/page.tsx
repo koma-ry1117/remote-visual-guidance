@@ -47,7 +47,7 @@ export default function ARPage() {
       )}
 
       <ARAnnotationProvider>
-        <div className="relative w-full h-screen">
+        <div className="fixed inset-0 w-full h-screen overflow-hidden">
           {demoMode ? (
             aframeLoaded ? (
               <DemoScene markerColor={markerColor} objectType={objectType} />
@@ -72,7 +72,7 @@ export default function ARPage() {
 
           {/* コントロールパネル */}
           <div
-            className={`absolute top-4 left-4 z-10 transition-transform duration-300 max-h-[calc(100vh-8rem)] w-72 ${
+            className={`fixed top-4 left-4 z-50 transition-transform duration-300 max-h-[calc(100vh-8rem)] w-72 ${
               showControls ? "translate-y-0" : "-translate-y-full opacity-0"
             }`}
           >
@@ -127,13 +127,13 @@ export default function ARPage() {
           {/* トグルボタン */}
           <button
             onClick={() => setShowControls(!showControls)}
-            className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-sm"
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-sm"
           >
             {showControls ? "パネルを非表示" : "パネルを表示"}
           </button>
 
           {/* 使用方法 */}
-          <div className="absolute bottom-4 left-4 z-10 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs max-h-64 overflow-y-auto">
+          <div className="fixed bottom-4 left-4 z-40 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs max-h-64 overflow-y-auto">
             <p className="font-semibold mb-1">使い方:</p>
             {demoMode ? (
               <ol className="list-decimal list-inside space-y-1 text-xs">
