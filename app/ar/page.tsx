@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Script from "next/script";
 import ARScene from "@/components/ARScene";
+import DemoScene from "@/components/DemoScene";
 import ColorPicker from "@/components/ColorPicker";
 import ObjectSelector from "@/components/ObjectSelector";
 import { ARAnnotationProvider } from "@/contexts/ARAnnotationContext";
@@ -20,6 +21,7 @@ export default function ARPage() {
   const [showWorkflow, setShowWorkflow] = useState(true);
   const [aframeLoaded, setAframeLoaded] = useState(false);
   const [arjsLoaded, setArjsLoaded] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   return (
     <>
@@ -32,8 +34,8 @@ export default function ARPage() {
           setAframeLoaded(true);
         }}
       />
-      {/* AR.js スクリプトをA-Frameのロード後にロード */}
-      {aframeLoaded && (
+      {/* AR.js スクリプトをA-Frameのロード後にロード（ARモードのみ） */}
+      {!demoMode && aframeLoaded && (
         <Script
           src="https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.min.js"
           strategy="afterInteractive"
@@ -46,7 +48,15 @@ export default function ARPage() {
 
       <ARAnnotationProvider>
         <div className="relative w-full h-screen">
-          {arjsLoaded ? (
+          {demoMode ? (
+            aframeLoaded ? (
+              <DemoScene markerColor={markerColor} objectType={objectType} />
+            ) : (
+              <div className="flex items-center justify-center h-screen">
+                <p>3D環境を読み込み中...</p>
+              </div>
+            )
+          ) : arjsLoaded ? (
             <ARScene markerColor={markerColor} objectType={objectType} />
           ) : (
             <div className="flex items-center justify-center h-screen">
@@ -78,6 +88,34 @@ export default function ARPage() {
                   {showWorkflow ? "手順を非表示" : "手順を表示"}
                 </button>
               </div>
+
+              {/* モード切り替え */}
+              <div className="pb-2 border-b border-gray-200">
+                <p className="text-xs text-gray-600 mb-1">表示モード:</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDemoMode(false)}
+                    className={`flex-1 px-3 py-1.5 text-xs rounded ${
+                      !demoMode
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    ARモード
+                  </button>
+                  <button
+                    onClick={() => setDemoMode(true)}
+                    className={`flex-1 px-3 py-1.5 text-xs rounded ${
+                      demoMode
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    デモモード
+                  </button>
+                </div>
+              </div>
+
               <ColorPicker color={markerColor} onChange={setMarkerColor} />
               <ObjectSelector objectType={objectType} onChange={setObjectType} />
               <div className="pt-2 border-t border-gray-200">
@@ -97,23 +135,34 @@ export default function ARPage() {
           {/* 使用方法 */}
           <div className="absolute bottom-4 left-4 z-10 bg-black/70 text-white p-3 rounded-lg text-sm max-w-xs">
             <p className="font-semibold mb-1">使い方:</p>
-            <ol className="list-decimal list-inside space-y-1 text-xs">
-              <li>HIROマーカーをカメラに向けてください</li>
-              <li>画面下部から注釈を追加できます</li>
-              <li>右上で作業手順を確認できます</li>
-              <li>左上でオブジェクト設定やスクリーンショット撮影ができます</li>
-            </ol>
-            <p className="mt-2 text-xs">
-              HIROマーカー:{" "}
-              <a
-                href="https://ar-js-org.github.io/AR.js/data/images/hiro.png"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-300 underline"
-              >
-                ダウンロード
-              </a>
-            </p>
+            {demoMode ? (
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>マウスドラッグで視点を回転できます</li>
+                <li>画面下部から注釈を追加できます</li>
+                <li>右側で作業手順を確認できます</li>
+                <li>左上でオブジェクト設定やモード切替ができます</li>
+              </ol>
+            ) : (
+              <>
+                <ol className="list-decimal list-inside space-y-1 text-xs">
+                  <li>HIROマーカーをカメラに向けてください</li>
+                  <li>画面下部から注釈を追加できます</li>
+                  <li>右側で作業手順を確認できます</li>
+                  <li>左上でオブジェクト設定やスクリーンショット撮影ができます</li>
+                </ol>
+                <p className="mt-2 text-xs">
+                  HIROマーカー:{" "}
+                  <a
+                    href="https://ar-js-org.github.io/AR.js/data/images/hiro.png"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-300 underline"
+                  >
+                    ダウンロード
+                  </a>
+                </p>
+              </>
+            )}
           </div>
         </div>
       </ARAnnotationProvider>
